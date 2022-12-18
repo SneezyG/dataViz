@@ -1,0 +1,90 @@
+
+
+<!-- 
+drawing barchart with d3.js
+-->
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>d3 lesson 1</title>
+    
+   <style>
+      html, body {
+        padding: 0;
+        margin: 0;
+      }
+      
+      body {
+        padding-top: 50px
+      }
+      
+      #svg {
+         margin: auto;
+         padding: 0;
+         width: 400px;
+         height: 400px;
+         border: 2px solid black;
+      }
+   
+      svg {
+         width: 100%;
+         height: 100%;
+         background-color: lightgrey;
+       }
+     
+   
+    
+   </style>
+  </head>
+<body>
+
+ <div id="svg"> 
+ <svg>
+ </svg>
+ </div>
+
+
+
+<script src="d3.min.js"></script>
+<script>
+
+// data contain drug-related criminal records one month ago
+const data = [
+  {"continent": "Africa", "record": 300},
+  {"continent": "Asia", "record": 500},
+  {"continent": "American", "record": 1500},
+  {"continent": "Europe", "record": 800},
+  {"continent": "Australia", "record": 400}
+]
+
+
+//const max_record = d3.max(data, d => d.record);
+const max_record = 1000;
+
+const scale = d3.scaleLinear()
+                .domain([0, max_record])
+                .range([0, 380])
+                .clamp(true);
+
+
+d3.select('svg')
+  .selectAll('rect')
+  .data(data)
+  .enter()
+  .append('rect')
+  .attr('width', 30)
+  .attr('height', d => scale(d.record))
+  .attr('x', (d, i) => i * 30 + 40)
+  .attr('y', d => 400 - scale(d.record))
+  .style('fill', 'yellow')
+  .style('stroke', 'grey');
+  
+
+
+
+
+</script>
+
+</body>
+</html>
