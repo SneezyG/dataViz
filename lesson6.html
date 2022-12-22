@@ -1,0 +1,277 @@
+
+
+<!-- 
+interactive visualization with d3.js.
+-->
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8" />
+    <title>d3 lesson 6</title>
+    <script src="d3.min.js"></script>
+    
+   <style>
+      html, body {
+        padding: 0;
+        margin: 0;
+      }
+      
+      body {
+        padding-top: 20px;
+      }
+      
+      body > p {
+        text-align: center;
+        font-size: 16px;
+      }
+      
+      #svg {
+         margin: auto;
+         padding: 20px;
+         width: 700px;
+         height: 300px;
+      }
+   
+      svg {
+         width: 100%;
+         height: 100%;
+         background-color: lightgrey;
+         border: 2px solid black;
+         margin-bottom: 30px;
+       }
+       
+      text {
+        font-size: 10px;
+        text-anchor: middle;
+        fill: #4f442b;
+      }
+      
+      g > text.active {
+        font-size: 20px;
+      }
+      
+      circle {
+        fill: purple;
+        stroke: black;
+        stroke-width: 1px;
+      }
+      
+      circle.active {
+        fill: rgb(9, 155, 135);
+      }
+      
+      circle.inactive {
+        fill: #B2BEB5;
+      }
+      
+      #control {
+        display: flex;
+        justify-content: center;
+      }
+      
+      button {
+        padding: 5px 7px;
+        margin-left: 20px;
+        text-transform: capitalize;
+      }
+      
+      h4 {
+        margin-top: 40px;
+      }
+      
+      #scheme {
+        padding-left: 15px;
+      }
+      
+      #scheme > div {
+        display: inline-block;
+        width: 25px;
+        height: 25px;
+        margin-bottom: 5px;
+      }
+      
+      #scheme > span {
+        position: relative;
+        bottom: 5px;
+      }
+      
+      #initial {
+        background-color: purple;
+      }
+      
+      #purple {
+        background-color: #9A4EAE;
+      }
+      
+      #orange {
+        background-color: #F5761A;
+      }
+      
+      #red {
+        background-color: red;
+      }
+      
+      #green {
+        background-color: #138808;
+      }
+      
+      #same {
+        background-color: rgb(9, 155, 135);
+      }
+      
+      #diff {
+        background-color: #B2BEB5;
+      }
+
+     
+   
+    
+   </style>
+  </head>
+<body>
+
+ <p>Visualizing team performance in the 2014 world cup tournament</p>
+
+ <div id="svg"> 
+ <svg>
+ </svg>
+ <div id="control" />
+ </div>
+ 
+ <h4> Color Scheme: </h4>
+ <div id='scheme'>
+ <div id="initial"></div>
+ <span>Teams Initial colour.</span> <br/>
+  <div id="purple"></div>
+ <span>Teams in CONCACAF region.</span> <br/>
+ <div id="orange"></div>
+ <span>Teams in UEFA region.</span> <br/>
+ <div id="green"></div>
+ <span>Teams in CONMEBOL region.</span> <br/>
+ <div id="red"></div>
+ <span>Teams in AFC region.</span> <br/>
+ <div id="same"></div>
+ <span>Teams in the same region as the hovered team.</span> <br/>
+ <div id="diff"></div>
+ <span>Teams in different region as the hovered team.</span>
+ <div>
+
+
+<script>
+
+
+let country = [];
+let teams;
+let control;
+let origin = [];
+let colorScale;
+
+d3.csv('team/cup.csv', data => {
+    country.push(data);
+});
+
+setTimeout(() => {
+  visualize(country);
+  createBtns(country[0]);
+  //console.log(country);
+  for (let data of country) {
+    if (origin.indexOf(data.region) == -1) {
+       origin.push(data.region)
+    }
+  }
+  colorScale = d3.scaleOrdinal().domain([origin]).range(d3.schemeCategory10);
+}, 3000)
+
+
+function visualize(data) {
+   d3.select('svg')
+      .append('g')
+      .attr('id', 'team')
+      .attr('transform', "translate(110, 180)")
+      .selectAll('g')
+      .data(data)
+      .enter()
+      .append('g')
+      .attr('class', 'teams')
+      .attr("transform", (d, i) => "translate(" + (i * 70) + ", 0)");
+   
+   teams = d3.selectAll('g.teams');
+   
+   teams.append('circle')
+        .attr('r', 0)
+        .on('mouseover', paintCircle)
+        .on('mouseout', removePaint)
+        .transition()
+        .delay((d, i) => i * 100)
+        .duration(400)
+        .attr('r', 40)
+        .transition()
+        .duration(500)
+        .attr('r', 25);
+
+       
+   teams.append('text')
+        .attr('y', 45)
+        .text(d => d.team);
+        
+}
+
+
+
+function createBtns(data) {
+   let keys = Object.keys(data);
+   keys = keys.filter(key => key !== "team" && key !== "region");
+   //console.log(keys);
+   control = d3.select('#control')
+               .selectAll('button')
+               .data(keys)
+               .enter()
+               .append('button')
+               .html(d => d)
+               .on('click', dimension);
+}
+
+
+
+function dimension() {
+   let key = this.__data__;
+   control.style('background-color', d => d == key ? 'green' : 'lightgrey')
+   let max = d3.max(country, data => parseFloat(data[key]));
+   let scale = d3.scaleLinear().domain([0, max]).range([3, 30]);
+   teams.selectAll('circle')
+        .style('fill', d => colorScale(d.region))
+        .transition()
+        .delay(50)
+        .duration(250)
+        .attr('r', 10)
+        .transition()
+        .duration(200)
+        .attr('r', d => scale(d[key]));
+}
+
+
+function paintCircle() {
+   let data = this.__data__;
+   teams.selectAll('circle')
+        .transition()
+        .delay(50)
+        .style('fill', '')
+        .attr('class', d => d.region == data.region ? 'active' : 'inactive');
+}
+
+function removePaint() {
+   teams.selectAll('circle')
+        .transition()
+        .delay(50)
+        .style('fill', d => colorScale(d.region))
+        .attr('class', '');
+}
+
+
+
+
+</script>
+
+</body>
+</html>

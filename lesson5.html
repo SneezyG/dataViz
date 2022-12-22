@@ -1,0 +1,136 @@
+
+
+
+<!-- 
+drawing scattered plot with d3.js
+-->
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>d3 lesson 5</title>
+    
+   <style>
+      html, body {
+        padding: 0;
+        margin: 0;
+      }
+      
+      body {
+        padding-top: 50px
+      }
+      
+      #svg {
+         margin: auto;
+         padding: 0;
+         width: 400px;
+         height: 400px;
+         border: 2px solid black;
+      }
+   
+      svg {
+         width: 100%;
+         height: 100%;
+         background-color: lightgrey;
+       }
+     
+   
+    
+   </style>
+  </head>
+<body>
+
+ <div id="svg"> 
+ <svg>
+ </svg>
+ </div>
+
+
+
+<script src="d3.min.js"></script>
+<script>
+
+// data contain drug-related criminal records one month ago
+const data = [
+  {"continent": "Africa", "record": 300, "dead": 20},
+  {"continent": "Asia", "record": 500, "dead": 50},
+  {"continent": "American", "record": 1500, "dead": 200},
+  {"continent": "Europe", "record": 800, "dead": 70},
+  {"continent": "Australia", "record": 400, "dead": 60}
+]
+
+console.log(data);
+
+
+const max_record = d3.max(data, d => d.record);
+const death = d3.extent(data, d => d.dead);
+const max_death = d3.max(data, d => d.dead);
+//const max_record = 1000;
+//console.log(max_record);
+//console.log(death);
+
+
+const Yscale = d3.scaleLinear()
+                .domain([0, max_record])
+                .range([40, 360])
+                .clamp(true);
+                
+const Xscale = d3.scaleLinear()
+                .domain(death)
+                .range([40, 360])
+                .clamp(true);
+                
+const Rscale = d3.scaleLinear()
+                .domain([0, max_death])
+                .range([2, 20])
+                .clamp(true);
+                
+                
+let records = d3.select('svg')
+                .selectAll('g')
+                .data(data)
+                .enter()
+                .append('g')
+                .attr('transform', d => 
+                "translate(" + Xscale(d.dead) + "," + (400 - Yscale(d.record))
+                + ")"
+                )
+                .on('mouseover', showLabel)
+                .on('mouseout', hideLabel);
+                
+                
+records.append('circle')
+       .attr('r', d => Rscale(d.dead))
+       .style('fill', 'purple')
+       .style('stroke-width', '1px')
+       .style('stroke', 'black');
+       
+       
+records.append('text')
+       .text(d => d.continent)
+       .style('font-size', '12px')
+       .style('opacity', 0)
+       .attr('y', d => Rscale(d.dead) * -1);
+
+
+function showLabel() {
+    d3.select(this)
+      .select('text')
+      .style('opacity', 1);
+}
+
+
+function hideLabel() {
+    d3.select(this)
+      .select('text')
+      .style('opacity', 0);
+}
+  
+
+
+
+
+</script>
+
+</body>
+</html>
