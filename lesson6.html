@@ -30,7 +30,7 @@ interactive visualization with d3.js.
          margin: auto;
          padding: 20px;
          width: 700px;
-         height: 300px;
+         height: 310px;
       }
    
       svg {
@@ -47,14 +47,14 @@ interactive visualization with d3.js.
         fill: #4f442b;
       }
       
-      g > text.active {
-        font-size: 20px;
+      g > text {
+        font-size: 11.5px;
       }
       
       circle {
         fill: purple;
         stroke: black;
-        stroke-width: 1px;
+        stroke-width: 1.2px;
       }
       
       circle.active {
@@ -93,6 +93,7 @@ interactive visualization with d3.js.
       
       #scheme > span {
         position: relative;
+        font-size: 12.5px;
         bottom: 5px;
       }
       
@@ -123,6 +124,44 @@ interactive visualization with d3.js.
       #diff {
         background-color: #B2BEB5;
       }
+      
+      #item {
+        width: 320px;
+        overflow: hidden;
+        box-shadow: 10px 10px 5px #888888;
+        border: none;
+        background-color: lightgrey;
+        border-radius: 10px;
+      }
+      
+      dialog::backdrop {
+        backdrop-filter: blur(2.5px);
+      }
+      
+      #exit {
+        cursor: pointer;
+        background-color: rgb(201, 133, 133);
+        font-size: 12px;
+      }
+      
+      #item > form {
+        text-align: center;
+        margin-top: 20px;
+      }
+      
+      #item tr {
+        border: 1px gray solid;
+      }
+      
+      #item td {
+        font-size: 14px;
+        padding-left: 40px;
+      }
+      
+      td.data {
+        font-weight: 900;
+      }
+
 
      
    
@@ -155,33 +194,74 @@ interactive visualization with d3.js.
  <span>Teams in the same region as the hovered team.</span> <br/>
  <div id="diff"></div>
  <span>Teams in different region as the hovered team.</span>
- <div>
+ 
+ <br/>
+ <br/>
+ <br/>
+ <br/>
+ <br/>
+   
+   
+ <dialog id="item">
+  <table>
+    <tr>
+    <th>Statistics</th>
+    </tr>
+    <tr><td>Team Name</td><td class="data"></td></tr>
+    <tr><td>Region</td><td class="data"></td></tr>
+    <tr><td>Wins</td><td class="data"></td></tr>
+    <tr><td>Losses</td><td class="data"></td></tr>
+    <tr><td>Draws</td><td class="data"></td></tr>
+    <tr><td>Points</td><td class="data"></td></tr>
+    <tr><td>Goals For</td><td class="data"></td></tr>
+    <tr><td>Goals Against</td><td class="data"></td></tr>
+    <tr><td>Clean Sheets</td><td class="data"></td></tr>
+    <tr><td>Yellow Cards</td><td class="data"></td></tr>
+    <tr><td>Red Cards</td><td class="data"></td></tr>
+  </table>
+
+  <form method="dialog">
+    <button id="exit">cancel</button>
+  </form>
+ </dialog>
 
 
 <script>
 
+let country = [
+  {"team":"Germany","region":"UEFA","win":"7","loss":"6","draw":"0","points":"1","gf":"19","ga":"18","cs":"4","yc":"14","rc":"4"},
+  {"team":"Argentina","region":"CONMEBOL","win":"7","loss":"5","draw":"1","points":"1","gf":"16","ga":"8","cs":"4","yc":"4","rc":"4"},
+  {"team":"Netherlands","region":"UEFA","win":"7","loss":"5","draw":"0","points":"2","gf":"17","ga":"15","cs":"4","yc":"11","rc":"4"},
+  {"team":"Belgium","region":"UEFA","win":"5","loss":"4","draw":"1","points":"0","gf":"12","ga":"6","cs":"3","yc":"3","rc":"2"},
+  {"team":"Colombia","region":"CONMEBOL","win":"5","loss":"4","draw":"1","points":"0","gf":"12","ga":"12","cs":"4","yc":"8","rc":"2"},
+  {"team":"Brazil","region":"CONMEBOL","win":"7","loss":"3","draw":"2","points":"2","gf":"11","ga":"11","cs":"14","yc":"-3","rc":"1"},
+  {"team":"Japan","region":"AFC","win":"3","loss":"0","draw":"2","points":"1","gf":"1","ga":"2","cs":"6","yc":"-4","rc":"1"},
+  {"team":"United States","region":"CONCACAF","win":"4","loss":"1","draw":"2","points":"1","gf":"4","ga":"5","cs":"6","yc":"-1","rc":"0"}
+];
 
-let country = [];
 let teams;
 let control;
 let origin = [];
 let colorScale;
 
+
+/*
 d3.csv('team/cup.csv', data => {
     country.push(data);
 });
+*/
 
 setTimeout(() => {
   visualize(country);
   createBtns(country[0]);
-  //console.log(country);
+  //console.log(JSON.stringify(country));
   for (let data of country) {
     if (origin.indexOf(data.region) == -1) {
        origin.push(data.region)
     }
   }
   colorScale = d3.scaleOrdinal().domain([origin]).range(d3.schemeCategory10);
-}, 3000)
+}, 1000)
 
 
 function visualize(data) {
@@ -202,6 +282,7 @@ function visualize(data) {
         .attr('r', 0)
         .on('mouseover', paintCircle)
         .on('mouseout', removePaint)
+        .on('click', showDetail)
         .transition()
         .delay((d, i) => i * 100)
         .duration(400)
@@ -247,7 +328,10 @@ function dimension() {
         .attr('r', 10)
         .transition()
         .duration(200)
-        .attr('r', d => scale(d[key]));
+        .attr('r', d =>  {
+          let value = d[key] <= 0 ?  0 : d[key];
+          return scale(value);
+        });
 }
 
 
@@ -260,6 +344,7 @@ function paintCircle() {
         .attr('class', d => d.region == data.region ? 'active' : 'inactive');
 }
 
+
 function removePaint() {
    teams.selectAll('circle')
         .transition()
@@ -269,6 +354,15 @@ function removePaint() {
 }
 
 
+function showDetail() {
+   let data = this.__data__;
+   d3.selectAll('td.data')
+     .data(Object.keys(data))
+     .html(d => data[d]);
+   
+   let item = d3.select('#item').node();
+   item.showModal();
+}
 
 
 </script>
