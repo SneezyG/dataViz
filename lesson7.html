@@ -1,0 +1,219 @@
+
+
+
+<!-- 
+drawing line-graph with d3.js
+-->
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>d3 lesson 7</title>
+    
+   <style>
+      html, body {
+        padding: 0;
+        margin: 0;
+      }
+      
+      body {
+        padding-top: 50px
+      }
+      
+      #svg {
+         margin: auto;
+         padding: 10px 10px 10px 20px;
+         width: 800px;
+         height: 500px;
+         overflow-x: scroll;
+         overflow-y: hidden;
+         border: 2px solid black;
+      }
+   
+      svg {
+         height: 100%;
+       }
+       
+       #xAxisG text, #yAxisG text {
+        fill: grey;
+        font-size: 12px;
+       }
+      
+       #yAxisG text {
+        font-size: 13px;
+        fill: #4f442b;
+       }
+      
+      
+     
+   
+    
+   </style>
+  </head>
+<body>
+
+ <div id="svg"> 
+ <svg>
+ </svg>
+ </div>
+
+
+
+<script src="d3.min.js"></script>
+
+<script>
+
+const svg = document.querySelector('svg');
+//console.log(svg);
+
+// initial array for setting graph dimention label
+const base = {
+  'svg': 780,
+  'label1': 200,
+  'label2': 400,
+  'label3': 600
+}
+const month1 = {
+  'svg': 1180,
+  'label1': 300,
+  'label2': 600,
+  'label3': 900
+}
+const month2 = {
+  'svg': 1580,
+  'label1': 300,
+  'label2': 700,
+  'label3': 1100
+}
+const month3 = {
+  'svg': 1980,
+  'label1': 350,
+  'label2': 800,
+  'label3': 1300
+}
+
+
+
+const duration = '120';
+let span;
+switch (duration) {
+  case '7':
+    span = base;
+    break;
+  case '15':
+    span = base;
+    break;
+  case '30':
+    span = month1;
+    break;
+  case '60':
+    span = month2;
+    break;
+  case '120':
+    span = month3;
+    break;
+}
+
+// set the width dimension of the svg container.
+svg.style.width = span.svg + 20 + 'px';
+
+//console.log(span);
+
+// create a label for the y-axis
+d3.select('svg')
+  .append('text')
+  .text('Sold Count')
+  .attr('id', 'ylabel')
+  .attr('x', 30)
+  .attr('y', 30)
+  
+// create series of label for the x-axis
+d3.select('svg')
+  .append('text')
+  .text('Days')
+  .attr('id', 'ylabel')
+  .attr('x', span.label1)
+  .attr('y', 475)
+d3.select('svg')
+  .append('text')
+  .text('Days')
+  .attr('id', 'ylabel')
+  .attr('x', span.label2)
+  .attr('y', 475)
+d3.select('svg')
+  .append('text')
+  .text('Days')
+  .attr('id', 'ylabel')
+  .attr('x', span.label3)
+  .attr('y', 475)
+
+
+// data source.
+const report = [
+  {'date': '2nd feb 2020', 'sold': 200},
+  {'date': '3rd feb 2020', 'sold': 400},
+  {'date': '4th feb 2020', 'sold': 150},
+  {'date': '5th feb 2020', 'sold': 300},
+  {'date': '5th feb 2020', 'sold': 700},
+  {'date': '6th feb 2020', 'sold': 600},
+  {'date': '7th feb 2020', 'sold': 500},
+  {'date': '8th feb 2020', 'sold': 360},
+  {'date': '9th feb 2020', 'sold': 480},
+  {'date': '10th feb 2020', 'sold': 250},
+  {'date': '11th feb 2020', 'sold': 620},
+  {'date': '12th feb 2020', 'sold': 390},
+  {'date': '13th feb 2020', 'sold': 800},
+  {'date': '14th feb 2020', 'sold': 730},
+]
+
+const soldMax = d3.max(report, data => data.sold + 50);
+const dayMax = report.length + 1;
+const dayArray = [];
+
+let count = 1;
+for (let day of report) {
+   dayArray.push(count);
+   count ++;
+}
+//console.log(soldMax);
+//console.log(dayArray);
+
+const xScale = d3.scaleLinear().domain([1, dayMax]).range([80, span.svg]);
+const yScale = d3.scaleLinear().domain([0, soldMax]).range([440, 40]);
+
+
+const xAxis = d3.axisBottom()
+                .scale(xScale)
+                .tickSize(400)
+                .tickValues(dayArray);
+
+//console.log(xAxis);               
+d3.select('svg')
+  .append('g')
+  .attr('id', 'xAxisG')
+  .style('color', '#dbd1d1')
+  .attr('transform', 'translate(0, 40)')
+  .call(xAxis);
+  
+  
+const yAxis = d3.axisLeft()
+                .scale(yScale)
+                .tickSize(span.svg - 60)
+                .ticks(5);
+d3.select('svg')
+  .append('g')
+  .attr('id', 'yAxisG')
+  .style('color', '#dbd1d1')
+  .attr('transform', `translate(${span.svg}, 0)`)
+  .call(yAxis);
+
+
+
+
+
+
+
+</script>
+
+</body>
+</html>
