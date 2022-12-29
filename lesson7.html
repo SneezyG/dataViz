@@ -20,18 +20,42 @@ drawing line-graph with d3.js
         padding-top: 50px
       }
       
-      #svg {
+      #svg1 {
          margin: auto;
-         padding: 10px 10px 10px 20px;
+         padding: 10px 10px 0 20px;
          width: 800px;
-         height: 500px;
-         overflow-x: scroll;
+         height: 400px;
+         overflow-x: auto;
          overflow-y: hidden;
          border: 2px solid black;
+      }
+      
+      #svg1::-webkit-scrollbar {
+        width: 8px;
+        height: 11px;
+      }
+      
+      /* Track */
+      #svg1::-webkit-scrollbar-track {
+        box-shadow: inset 0 0 5px grey; 
+        border-radius: 3px;
+      }
+       
+      /* Handle */
+      #svg1::-webkit-scrollbar-thumb {
+        background: #bd9795; 
+        border-radius: 3px;
+      }
+      
+      /* Handle on hover */
+      #svg1::-webkit-scrollbar-thumb:hover {
+        background: #ec807a;
       }
    
       svg {
          height: 100%;
+         position: relative;
+         /*transform: scale(0.5);*/
        }
        
        #xAxisG text, #yAxisG text {
@@ -40,8 +64,13 @@ drawing line-graph with d3.js
        }
       
        #yAxisG text {
-        font-size: 13px;
+        font-size: 14px;
         fill: #4f442b;
+       }
+       
+       .salePoints text {
+         font-size: 12px;
+         opacity: 0;
        }
       
       
@@ -52,7 +81,7 @@ drawing line-graph with d3.js
   </head>
 <body>
 
- <div id="svg"> 
+ <div id="svg1"> 
  <svg>
  </svg>
  </div>
@@ -60,11 +89,9 @@ drawing line-graph with d3.js
 
 
 <script src="d3.min.js"></script>
+<script src="data.js"></script>
 
 <script>
-
-const svg = document.querySelector('svg');
-//console.log(svg);
 
 // initial array for setting graph dimention label
 const base = {
@@ -74,133 +101,122 @@ const base = {
   'label3': 600
 }
 const month1 = {
-  'svg': 1180,
-  'label1': 300,
-  'label2': 600,
-  'label3': 900
-}
-const month2 = {
-  'svg': 1580,
+  'svg': 1380,
   'label1': 300,
   'label2': 700,
   'label3': 1100
 }
-const month3 = {
-  'svg': 1980,
+const month2 = {
+  'svg': 2780,
   'label1': 350,
-  'label2': 800,
-  'label3': 1300
+  'label2': 1000,
+  'label3': 2200
+}
+const month4 = {
+  'svg': 5580,
+  'label1': 350,
+  'label2': 2500,
+  'label3': 5000
 }
 
 
 
-const duration = '120';
+const duration = '16';
 let span;
 switch (duration) {
-  case '7':
+  case '1':
     span = base;
+    sales = sales.slice(0, 7);
     break;
-  case '15':
+  case '2':
     span = base;
+    sales = sales.slice(0, 14);
     break;
-  case '30':
+  case '4':
     span = month1;
+    sales = sales.slice(0, 28);
     break;
-  case '60':
+  case '8':
     span = month2;
+    sales = sales.slice(0, 56);
     break;
-  case '120':
-    span = month3;
+  case '16':
+    span = month4;
+    sales = sales;
     break;
 }
 
-// set the width dimension of the svg container.
+// set the width dimension of the svg element.
+const svg = document.querySelector('#svg1 > svg');
 svg.style.width = span.svg + 20 + 'px';
 
-//console.log(span);
+
+// set useful variables.
+const soldMax = d3.max(sales, data => data.sold + 50);
+const dayMax = sales.length + 1;
+const dayArray = [];
+
+let count = 1;
+for (let day of sales) {
+   dayArray.push(count);
+   count ++;
+}
+//console.log(sales);
+
 
 // create a label for the y-axis
-d3.select('svg')
+d3.select(svg)
   .append('text')
   .text('Sold Count')
   .attr('id', 'ylabel')
-  .attr('x', 30)
+  .attr('x', 20)
   .attr('y', 30)
   
 // create series of label for the x-axis
-d3.select('svg')
+d3.select(svg)
   .append('text')
   .text('Days')
   .attr('id', 'ylabel')
   .attr('x', span.label1)
-  .attr('y', 475)
-d3.select('svg')
+  .attr('y', 375)
+d3.select(svg)
   .append('text')
   .text('Days')
   .attr('id', 'ylabel')
   .attr('x', span.label2)
-  .attr('y', 475)
-d3.select('svg')
+  .attr('y', 375)
+d3.select(svg)
   .append('text')
   .text('Days')
   .attr('id', 'ylabel')
   .attr('x', span.label3)
-  .attr('y', 475)
+  .attr('y', 375)
 
 
-// data source.
-const report = [
-  {'date': '2nd feb 2020', 'sold': 200},
-  {'date': '3rd feb 2020', 'sold': 400},
-  {'date': '4th feb 2020', 'sold': 150},
-  {'date': '5th feb 2020', 'sold': 300},
-  {'date': '5th feb 2020', 'sold': 700},
-  {'date': '6th feb 2020', 'sold': 600},
-  {'date': '7th feb 2020', 'sold': 500},
-  {'date': '8th feb 2020', 'sold': 360},
-  {'date': '9th feb 2020', 'sold': 480},
-  {'date': '10th feb 2020', 'sold': 250},
-  {'date': '11th feb 2020', 'sold': 620},
-  {'date': '12th feb 2020', 'sold': 390},
-  {'date': '13th feb 2020', 'sold': 800},
-  {'date': '14th feb 2020', 'sold': 730},
-]
-
-const soldMax = d3.max(report, data => data.sold + 50);
-const dayMax = report.length + 1;
-const dayArray = [];
-
-let count = 1;
-for (let day of report) {
-   dayArray.push(count);
-   count ++;
-}
-//console.log(soldMax);
-//console.log(dayArray);
-
+// create chart scale
 const xScale = d3.scaleLinear().domain([1, dayMax]).range([80, span.svg]);
-const yScale = d3.scaleLinear().domain([0, soldMax]).range([440, 40]);
+const yScale = d3.scaleLinear().domain([0, soldMax]).range([340, 40]);
 
 
+// draw the x-axis
 const xAxis = d3.axisBottom()
                 .scale(xScale)
-                .tickSize(400)
+                .tickSize(300)
                 .tickValues(dayArray);
-
-//console.log(xAxis);               
-d3.select('svg')
+d3.select(svg)
   .append('g')
   .attr('id', 'xAxisG')
   .style('color', '#dbd1d1')
   .attr('transform', 'translate(0, 40)')
   .call(xAxis);
   
-  
+ 
+// draw the y-axis 
 const yAxis = d3.axisLeft()
                 .scale(yScale)
-                .tickSize(span.svg - 60)
+                .tickSize(span.svg - 55)
                 .ticks(5);
-d3.select('svg')
+d3.select(svg)
   .append('g')
   .attr('id', 'yAxisG')
   .style('color', '#dbd1d1')
@@ -208,7 +224,91 @@ d3.select('svg')
   .call(yAxis);
 
 
+// draw chart  
+d3.select(svg)
+  .append('g')
+  .attr('id', 'saleChart')
+  .attr('transform', "translate(0, 0)")
+  .selectAll('g')
+  .data(sales)
+  .enter()
+  .append('g')
+  .attr('class', 'salePoints')
+  .attr('transform', (d, i) => `translate(${xScale(i+1)}, ${yScale(d.sold)})`);
 
+// call visualize with time-out.
+setTimeout(() => {
+   visualize();
+}, 1000);
+ 
+function visualize() {
+    // get the chart points and append circle
+    const points = d3.selectAll('.salePoints');
+    points.append('circle')
+          .attr('r', 0)
+          .style('fill', 'red')
+          .on('mouseover', showText)
+          .on('mouseout', hideText)
+          .transition()
+          .delay(50)
+          .duration(500)
+          .attr('r', 10)
+          .transition()
+          .duration(500)
+          .attr('r', 6);
+
+    drawLine();  
+   
+   let chart = d3.select('#saleChart').node();
+   svg.appendChild(chart);
+   
+    points.append('text')
+          .text(d => d.date)
+          .attr('x', 7)
+          .attr('y', -17);
+
+    points.append('text')
+          .text(d => d.sold + ' sales')
+          .attr('x', 7)
+          .attr('y', -3);
+}
+
+
+function drawLine() {
+   let line = d3.line()
+                .x((d,i) => xScale(i + 1))
+                .y(d => yScale(d.sold))
+                .curve(d3.curveStep);
+   d3.select(svg)
+     .append('path')
+     .attr('d', line(sales))
+     .style('opacity', 0)
+     .attr("fill", "none")
+     .attr("stroke", "#ec807a")
+     .attr("stroke-width", 1.5)
+     .transition()
+     .delay(1200)
+     .style('opacity', 0.8);
+}
+
+      
+function showText(e) {
+  let g = e.target.parentElement;
+  d3.select(g)
+    .selectAll('text')
+    .transition()
+    .delay(30)
+    .style('opacity', 1);
+}
+
+function hideText(e) {
+  let g = e.target.parentElement;
+  d3.select(g)
+    .selectAll('text')
+    .transition()
+    .delay(30)
+    .style('opacity', 0);
+}
 
 
 
