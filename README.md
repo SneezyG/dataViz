@@ -1,2 +1,2 @@
-# d3-visual-repo
-Visualizing data in web-app
+# Data visualization
+Visualizing data in web-app with d3js
